@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Flappy Tracker</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'shop/styles/screen.css' %}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>JIRA MANAGEMENT</h1>
+            <a href="https://nyc-alora.atlassian.net/jira/software/projects/KAN/boards/1" target="_blank"> --> CLICK HERE <-- </a>
+        </div>
+
+        <h1>YOUR SCORES</h1>
+        <div class="score-container">
+            {% for number in numbers %}
+                <div class="score-box">{{ number }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="side-panel">
+            <img id="score-plot" src="{{ plot }}" alt="Score Plot">
+            <button id="clear-scores-btn"></button>
+        </div>
+    </div>
+
+<script>
+    // Function to fetch data and refresh the page
+    function fetchDataAndRefresh() {
+    fetch('/get_scores/')  // Use the new endpoint
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('score-container');
+            container.innerHTML = '';
+            data.scores.forEach(score => {
+                const box = document.createElement('div');
+                box.className = 'score-box';
+                box.textContent = score;
+                container.appendChild(box);
+            });
+        })
+        .catch(error => console.error('Error fetching data:', error));
+}
+
+    // Add event listener for the clear scores button
+    document.getElementById('clear-scores-btn').addEventListener('click', function () {
+        const isConfirmed = confirm('Are you sure you want to clear the scores?');
+        if (isConfirmed) {
+            fetch('/clear_scores/')
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    fetchDataAndRefresh();  // Refresh the page after clearing
+                })
+                .catch(error => console.error('Error clearing scores:', error));
+        }
+    });
+
+    // Fetch data and refresh the page every 60 seconds (adjust the interval as needed)
+    setInterval(fetchDataAndRefresh, 60000);
+</script>
+</body>
+</html>
